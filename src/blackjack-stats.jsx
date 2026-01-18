@@ -2019,6 +2019,40 @@ const BlackjackStats = () => {
                 <div className="player-stats">
                   <span>🪙 {player.coins}</span>
                   {player.bet > 0 && <span className="bet-amount">Bet: {player.bet}</span>}
+                  {/* Show WIN/LOSE/PUSH badge during result phase */}
+                  {gamePhase === 'result' && player.bet > 0 && (() => {
+                    const playerValue = calculateHandValue(player.hand);
+                    const playerBusted = playerValue > 21;
+                    const dealerValue = calculateHandValue(dealer.hand);
+                    const dealerBusted = dealerValue > 21;
+                    
+                    let result;
+                    if (playerBusted) {
+                      result = 'LOSE';
+                    } else if (dealerBusted || playerValue > dealerValue) {
+                      result = 'WIN';
+                    } else if (playerValue === dealerValue) {
+                      result = 'PUSH';
+                    } else {
+                      result = 'LOSE';
+                    }
+                    
+                    return (
+                      <span style={{
+                        padding: '4px 12px',
+                        borderRadius: '12px',
+                        fontWeight: 'bold',
+                        fontSize: '0.85rem',
+                        background: result === 'WIN' ? '#10b981' : 
+                                   result === 'LOSE' ? '#ef4444' : '#fbbf24',
+                        color: 'white',
+                        marginLeft: '8px'
+                      }}>
+                        {result === 'WIN' ? '🎉 WIN' : 
+                         result === 'LOSE' ? '💔 LOSE' : '🤝 PUSH'}
+                      </span>
+                    );
+                  })()}
                 </div>
               </div>
               
@@ -2202,6 +2236,13 @@ const BlackjackStats = () => {
                 style={{ flex: '1', minWidth: '200px', background: '#6366f1' }}
               >
                 📋 Replay Game Log
+              </button>
+              <button 
+                className="action-btn" 
+                onClick={() => setGamePhase('setup')}
+                style={{ flex: '1', minWidth: '200px', background: '#ef4444' }}
+              >
+                🎮 Select Game Mode
               </button>
             </div>
           )}
