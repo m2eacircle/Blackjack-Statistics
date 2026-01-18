@@ -638,8 +638,9 @@ const BlackjackStats = () => {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [gameMode, setGameMode] = useState(null); // 'regular', 'switch', 'bahama'
   const [numDecks, setNumDecks] = useState(6);
+  const [numAIPlayers, setNumAIPlayers] = useState(2); // 2-4 AI players
   const [players, setPlayers] = useState([
-    { id: 1, type: 'human', name: 'Player 1', coins: 100, hand: [], bet: 0, locked: false },
+    { id: 1, type: 'human', name: 'Human Player', coins: 100, hand: [], bet: 0, locked: false },
     { id: 2, type: 'ai', name: 'AI 1', coins: 100, hand: [], bet: 0, locked: false },
     { id: 3, type: 'ai', name: 'AI 2', coins: 100, hand: [], bet: 0, locked: false }
   ]);
@@ -815,6 +816,30 @@ const BlackjackStats = () => {
       }
     }
   };
+  
+  // Update players when number of AI players changes
+  useEffect(() => {
+    if (gamePhase === 'setup') {
+      const newPlayers = [
+        { id: 1, type: 'human', name: 'Human Player', coins: 100, hand: [], bet: 0, locked: false }
+      ];
+      
+      // Add AI players based on selection (2-4)
+      for (let i = 0; i < numAIPlayers; i++) {
+        newPlayers.push({
+          id: i + 2,
+          type: 'ai',
+          name: `AI ${i + 1}`,
+          coins: 100,
+          hand: [],
+          bet: 0,
+          locked: false
+        });
+      }
+      
+      setPlayers(newPlayers);
+    }
+  }, [numAIPlayers, gamePhase]);
   
   useEffect(() => {
     const terms = localStorage.getItem('blackjackTermsAccepted');
@@ -1648,28 +1673,35 @@ const BlackjackStats = () => {
           </div>
           
           <div className="setup-section">
-            <h3>Players</h3>
+            <h3>Number of AI Players</h3>
+            <div className="deck-selector">
+              {[2, 3, 4].map(num => (
+                <button
+                  key={num}
+                  className={`deck-btn ${numAIPlayers === num ? 'active' : ''}`}
+                  onClick={() => setNumAIPlayers(num)}
+                >
+                  {num} AI Players
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          <div className="setup-section">
+            <h3>Players ({players.length} total)</h3>
             <div className="players-list">
               {players.map((player, index) => (
                 <div key={player.id} className="player-row">
                   <button 
                     className="type-toggle"
-                    onClick={() => togglePlayerType(index)}
+                    style={{ cursor: 'default' }}
                   >
                     {player.type === 'human' ? '👤' : '🤖'}
                   </button>
                   
-                  {player.type === 'human' ? (
-                    <input
-                      type="text"
-                      value={player.name}
-                      onChange={(e) => updatePlayerName(index, e.target.value)}
-                      className="name-input"
-                      placeholder="Player name"
-                    />
-                  ) : (
-                    <span className="ai-name">{player.name}</span>
-                  )}
+                  <span className={player.type === 'human' ? 'human-name' : 'ai-name'}>
+                    {player.name}
+                  </span>
                   
                   <span className="coins-display">{player.coins} 🪙</span>
                 </div>
@@ -1820,6 +1852,13 @@ const BlackjackStats = () => {
             flex: 1;
             font-size: 1.1rem;
             color: #666;
+          }
+          
+          .human-name {
+            flex: 1;
+            font-size: 1.1rem;
+            color: #1e3c72;
+            font-weight: bold;
           }
           
           .coins-display {
