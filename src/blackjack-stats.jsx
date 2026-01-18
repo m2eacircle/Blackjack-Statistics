@@ -131,6 +131,94 @@ const createDeck = () => {
   return deck;
 };
 
+// Terms Modal Component
+const TermsModal = ({ onClose, alreadyAccepted }) => {
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(0, 0, 0, 0.7)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+      padding: '20px'
+    }} onClick={onClose}>
+      <div style={{
+        background: 'white',
+        borderRadius: '20px',
+        maxWidth: '600px',
+        width: '100%',
+        maxHeight: '80vh',
+        overflowY: 'auto',
+        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)'
+      }} onClick={(e) => e.stopPropagation()}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '30px 30px 20px 30px',
+          borderBottom: '1px solid #e5e7eb'
+        }}>
+          <h2 style={{ margin: 0, color: '#1a1a1a', fontSize: '1.8rem' }}>Terms of Use</h2>
+          <button onClick={onClose} style={{
+            background: 'none',
+            border: 'none',
+            fontSize: '2rem',
+            color: '#666',
+            cursor: 'pointer',
+            lineHeight: 1,
+            padding: 0,
+            width: '30px',
+            height: '30px'
+          }}>×</button>
+        </div>
+        
+        <div style={{ padding: '30px', lineHeight: 1.6 }}>
+          <p style={{ margin: '0 0 15px 0', color: '#333' }}>
+            By checking here, I acknowledge and agree that the blackjack and its 
+            statistical odds of winning information are for study purposes only and 
+            may contain errors.
+          </p>
+          <p style={{ margin: '0 0 15px 0', color: '#333' }}>
+            This app is a game designed to learn about winning odds. It is designed 
+            for entertainment purposes only and is not intended for real-money gambling.
+          </p>
+          
+          {alreadyAccepted && (
+            <div style={{
+              marginTop: '20px',
+              padding: '15px',
+              background: '#d1fae5',
+              borderRadius: '10px',
+              color: '#065f46',
+              fontWeight: 'bold'
+            }}>
+              ✓ You have already accepted these terms
+            </div>
+          )}
+        </div>
+        
+        <div style={{ padding: '20px 30px 30px 30px', textAlign: 'right' }}>
+          <button onClick={onClose} style={{
+            padding: '12px 30px',
+            background: '#1e3c72',
+            color: 'white',
+            border: 'none',
+            borderRadius: '10px',
+            fontSize: '1.1rem',
+            cursor: 'pointer',
+            fontFamily: 'inherit'
+          }}>Close</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const BlackjackStats = () => {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
@@ -535,7 +623,10 @@ const BlackjackStats = () => {
   
   if (!gameMode) {
     return (
-      <div className="game-select-screen">
+      <>
+        {showTermsModal && <TermsModal onClose={closeTermsModal} alreadyAccepted={true} />}
+        
+        <div className="game-select-screen">
         <div className="header">
           <h1 className="main-title">Blackjack Statistics</h1>
           <a href="https://www.m2eacircle.com/" className="circle-link">
@@ -580,7 +671,7 @@ const BlackjackStats = () => {
         
         <footer className="footer">
           <a href="https://www.m2ealabs.com/" className="footer-link">© 2025 m2ea Labs. All rights reserved.</a>
-          <button onClick={() => setAcceptedTerms(false)} className="terms-link">Terms of Use</button>
+          <button onClick={showTerms} className="terms-link">Terms of Use</button>
         </footer>
         
         <style jsx>{`
@@ -724,12 +815,16 @@ const BlackjackStats = () => {
           }
         `}</style>
       </div>
+      </>
     );
   }
   
   if (gamePhase === 'setup') {
     return (
-      <div className="setup-screen">
+      <>
+        {showTermsModal && <TermsModal onClose={closeTermsModal} alreadyAccepted={true} />}
+        
+        <div className="setup-screen">
         <div className="header">
           <h1 className="main-title">Setup Game</h1>
           <a href="https://www.m2eacircle.com/" className="circle-link">
@@ -795,7 +890,7 @@ const BlackjackStats = () => {
         
         <footer className="footer">
           <a href="https://www.m2ealabs.com/" className="footer-link">© 2025 m2ea Labs. All rights reserved.</a>
-          <button onClick={() => setAcceptedTerms(false)} className="terms-link">Terms of Use</button>
+          <button onClick={showTerms} className="terms-link">Terms of Use</button>
         </footer>
         
         <style jsx>{`
@@ -1003,6 +1098,7 @@ const BlackjackStats = () => {
           }
         `}</style>
       </div>
+      </>
     );
   }
   
@@ -1015,7 +1111,10 @@ const BlackjackStats = () => {
                    currentPlayer.coins >= 5;
   
   return (
-    <div className="game-screen">
+    <>
+      {showTermsModal && <TermsModal onClose={closeTermsModal} alreadyAccepted={true} />}
+      
+      <div className="game-screen">
       <div className="game-header">
         <div className="title-section">
           <h1>Blackjack Statistics</h1>
@@ -1179,7 +1278,7 @@ const BlackjackStats = () => {
       
       <footer className="footer">
         <a href="https://www.m2ealabs.com/" className="footer-link">© 2025 m2ea Labs. All rights reserved.</a>
-        <button onClick={() => setAcceptedTerms(false)} className="terms-link">Terms of Use</button>
+        <button onClick={showTerms} className="terms-link">Terms of Use</button>
       </footer>
       
       <style jsx>{`
@@ -1492,6 +1591,7 @@ const BlackjackStats = () => {
         }
       `}</style>
     </div>
+    </>
   );
 };
 
