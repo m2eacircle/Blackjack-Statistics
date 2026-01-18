@@ -460,7 +460,7 @@ const ReplayModal = ({ onClose, gameHistory }) => {
                   <h4 style={{ margin: '0 0 5px 0', fontSize: '1.2rem' }}>
                     {player.type === 'ai' ? '🤖' : '👤'} {player.name}
                   </h4>
-                  <div style={{ fontSize: '0.9rem', opacity: 0.8' }}>
+                  <div style={{ fontSize: '0.9rem', opacity: 0.8 }}>
                     Bet: <strong>{player.bet} coins</strong>
                   </div>
                 </div>
