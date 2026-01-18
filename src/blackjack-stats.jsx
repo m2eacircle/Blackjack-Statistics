@@ -531,6 +531,65 @@ const ReplayModal = ({ onClose, gameHistory }) => {
                 </div>
               )}
               
+              {/* Decision Log */}
+              {player.decisions && player.decisions.length > 0 && (
+                <div style={{ marginTop: '15px', paddingTop: '15px', borderTop: '1px solid rgba(255,255,255,0.2)' }}>
+                  <div style={{ fontSize: '0.95rem', fontWeight: 'bold', marginBottom: '10px', color: '#fbbf24' }}>
+                    📊 Decision Log:
+                  </div>
+                  {player.decisions.map((decision, decIdx) => (
+                    <div key={decIdx} style={{
+                      background: 'rgba(0,0,0,0.2)',
+                      padding: '10px',
+                      borderRadius: '8px',
+                      marginBottom: '8px',
+                      fontSize: '0.85rem'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <div>
+                          <strong style={{ color: '#fbbf24' }}>#{decIdx + 1}:</strong>{' '}
+                          <span style={{ 
+                            background: decision.action === 'HIT' ? '#3b82f6' : 
+                                       decision.action === 'STAND' ? '#10b981' : 
+                                       decision.action === 'DOUBLE' ? '#f59e0b' : 
+                                       decision.action === 'SPLIT' ? '#8b5cf6' : '#6b7280',
+                            color: 'white',
+                            padding: '3px 8px',
+                            borderRadius: '4px',
+                            fontWeight: 'bold',
+                            fontSize: '0.8rem'
+                          }}>
+                            {decision.action}
+                          </span>
+                          {decision.splitHand && <span style={{ marginLeft: '8px', opacity: 0.7 }}>(Split Hand)</span>}
+                        </div>
+                        <div style={{ opacity: 0.7 }}>
+                          Hand: {decision.handValue} vs Dealer {decision.dealerCard.display}{decision.dealerCard.suit}
+                        </div>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: '6px', fontSize: '0.75rem' }}>
+                        <div style={{ background: 'rgba(59, 130, 246, 0.2)', padding: '4px 6px', borderRadius: '4px' }}>
+                          HIT: <strong>{decision.probabilities.hit}%</strong>
+                        </div>
+                        <div style={{ background: 'rgba(16, 185, 129, 0.2)', padding: '4px 6px', borderRadius: '4px' }}>
+                          STAND: <strong>{decision.probabilities.stand}%</strong>
+                        </div>
+                        {decision.probabilities.double !== null && (
+                          <div style={{ background: 'rgba(245, 158, 11, 0.2)', padding: '4px 6px', borderRadius: '4px' }}>
+                            DOUBLE: <strong>{decision.probabilities.double}%</strong>
+                          </div>
+                        )}
+                        {decision.probabilities.split !== null && (
+                          <div style={{ background: 'rgba(139, 92, 246, 0.2)', padding: '4px 6px', borderRadius: '4px' }}>
+                            SPLIT: <strong>{decision.probabilities.split}%</strong>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
               <div style={{ 
                 marginTop: '15px', 
                 paddingTop: '15px', 
@@ -638,10 +697,33 @@ const BlackjackStats = () => {
     const decision = getAIDecision(currentPlayer.hand, dealer.hand[0]);
     console.log(`AI ${currentPlayerIndex} (${currentPlayer.name}) decides:`, decision);
     
+    // Track AI decision with probabilities
+    const dealerUpCard = dealer.hand[0];
+    const aiDecisionRecord = {
+      action: decision.toUpperCase(),
+      hand: [...currentPlayer.hand],
+      handValue: calculateHandValue(currentPlayer.hand),
+      dealerCard: dealerUpCard,
+      probabilities: {
+        hit: calculateWinProbability(currentPlayer.hand, dealerUpCard, 'hit', null),
+        stand: calculateWinProbability(currentPlayer.hand, dealerUpCard, 'stand', null),
+        double: currentPlayer.hand.length === 2 ? calculateWinProbability(currentPlayer.hand, dealerUpCard, 'double', null) : null,
+        split: currentPlayer.hand.length === 2 && currentPlayer.hand[0].value === currentPlayer.hand[1].value ? calculateWinProbability(currentPlayer.hand, dealerUpCard, 'split', null) : null
+      },
+      splitHand: false
+    };
+    
     // Execute decision
     if (decision === 'hit') {
       const newShoe = [...shoe];
       const newPlayers = [...players];
+      
+      // Add decision record before executing
+      if (!newPlayers[currentPlayerIndex].decisions) {
+        newPlayers[currentPlayerIndex].decisions = [];
+      }
+      newPlayers[currentPlayerIndex].decisions.push(aiDecisionRecord);
+      
       newPlayers[currentPlayerIndex].hand.push(newShoe.pop());
       
       const handValue = calculateHandValue(newPlayers[currentPlayerIndex].hand);
@@ -659,15 +741,28 @@ const BlackjackStats = () => {
       // If not busted, useEffect will trigger again automatically
       
     } else if (decision === 'stand') {
+      const newPlayers = [...players];
+      if (!newPlayers[currentPlayerIndex].decisions) {
+        newPlayers[currentPlayerIndex].decisions = [];
+      }
+      newPlayers[currentPlayerIndex].decisions.push(aiDecisionRecord);
+      setPlayers(newPlayers);
+      
       console.log(`AI ${currentPlayerIndex} stands`);
       setTimeout(() => {
-        moveToNextPlayer(players, shoe);
+        moveToNextPlayer(newPlayers, shoe);
       }, 1000);
       
     } else if (decision === 'double') {
       if (currentPlayer.coins >= 5 && currentPlayer.hand.length === 2) {
         const newShoe = [...shoe];
         const newPlayers = [...players];
+        
+        if (!newPlayers[currentPlayerIndex].decisions) {
+          newPlayers[currentPlayerIndex].decisions = [];
+        }
+        newPlayers[currentPlayerIndex].decisions.push(aiDecisionRecord);
+        
         newPlayers[currentPlayerIndex].coins -= 5;
         newPlayers[currentPlayerIndex].bet += 5;
         newPlayers[currentPlayerIndex].hand.push(newShoe.pop());
@@ -693,6 +788,12 @@ const BlackjackStats = () => {
           currentPlayer.hand[0].value === currentPlayer.hand[1].value && !currentPlayer.splitHand) {
         const newShoe = [...shoe];
         const newPlayers = [...players];
+        
+        if (!newPlayers[currentPlayerIndex].decisions) {
+          newPlayers[currentPlayerIndex].decisions = [];
+        }
+        newPlayers[currentPlayerIndex].decisions.push(aiDecisionRecord);
+        
         newPlayers[currentPlayerIndex].coins -= 5;
         
         const card1 = currentPlayer.hand[0];
@@ -786,7 +887,8 @@ const BlackjackStats = () => {
       ...player,
       hand: player.locked ? [] : [currentShoe.pop(), currentShoe.pop()],
       splitHand: null,
-      playingSplit: false
+      playingSplit: false,
+      decisions: [] // Reset decisions for new round
     }));
     
     const dealerHand = [currentShoe.pop(), currentShoe.pop()];
@@ -820,6 +922,29 @@ const BlackjackStats = () => {
     // Determine which hand we're playing
     const playingSplitHand = player.splitHand && player.playingSplit;
     const activeHand = playingSplitHand ? 'splitHand' : 'hand';
+    
+    // Track decision with probabilities
+    const handToUse = playingSplitHand ? player.splitHand : player.hand;
+    const dealerUpCard = dealer.hand[0];
+    const decision = {
+      action: action.toUpperCase(),
+      hand: [...handToUse],
+      handValue: calculateHandValue(handToUse),
+      dealerCard: dealerUpCard,
+      probabilities: {
+        hit: calculateWinProbability(handToUse, dealerUpCard, 'hit', null),
+        stand: calculateWinProbability(handToUse, dealerUpCard, 'stand', null),
+        double: handToUse.length === 2 ? calculateWinProbability(handToUse, dealerUpCard, 'double', null) : null,
+        split: handToUse.length === 2 && handToUse[0].value === handToUse[1].value ? calculateWinProbability(handToUse, dealerUpCard, 'split', null) : null
+      },
+      splitHand: playingSplitHand
+    };
+    
+    // Add decision to player's decisions array
+    if (!updatedPlayers[currentPlayerIndex].decisions) {
+      updatedPlayers[currentPlayerIndex].decisions = [];
+    }
+    updatedPlayers[currentPlayerIndex].decisions.push(decision);
     
     if (action === 'hit') {
       updatedPlayers[currentPlayerIndex][activeHand].push(currentShoe.pop());
@@ -1049,7 +1174,8 @@ const BlackjackStats = () => {
         busted: calculateHandValue(p.hand) > 21,
         finalCoins: p.coins,
         result: p.coins > (p.coins - (p.bet * 2)) ? 'WIN' : 
-                p.coins === (p.coins - (p.bet * 2)) ? 'PUSH' : 'LOSE'
+                p.coins === (p.coins - (p.bet * 2)) ? 'PUSH' : 'LOSE',
+        decisions: p.decisions || [] // Include all decisions made
       })),
       dealer: {
         hand: dealerHand,
