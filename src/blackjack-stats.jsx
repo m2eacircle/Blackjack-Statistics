@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Home } from 'lucide-react';
 
 // Statistical calculation utilities
@@ -237,6 +237,24 @@ const BlackjackStats = () => {
   const [showStats, setShowStats] = useState(false);
   const [editingPlayers, setEditingPlayers] = useState(false);
   
+  // Refs to always have latest state in callbacks
+  const playersRef = useRef(players);
+  const shoeRef = useRef(shoe);
+  const dealerRef = useRef(dealer);
+  
+  // Update refs when state changes
+  useEffect(() => {
+    playersRef.current = players;
+  }, [players]);
+  
+  useEffect(() => {
+    shoeRef.current = shoe;
+  }, [shoe]);
+  
+  useEffect(() => {
+    dealerRef.current = dealer;
+  }, [dealer]);
+  
   useEffect(() => {
     const terms = localStorage.getItem('blackjackTermsAccepted');
     if (terms === 'true') {
@@ -328,7 +346,7 @@ const BlackjackStats = () => {
     
     // If first player is AI, start AI play
     if (updatedPlayers[0] && updatedPlayers[0].type === 'ai' && !updatedPlayers[0].locked) {
-      setTimeout(() => playAITurn(updatedPlayers, currentShoe, 0), 1000);
+      setTimeout(() => playAITurn(0), 1500);
     }
   };
   
@@ -450,81 +468,86 @@ const BlackjackStats = () => {
       setPlayers(updatedPlayers);
       setShoe(currentShoe);
       
-      // If next player is AI, play automatically
-      if (updatedPlayers[nextIndex].type === 'ai') {
-        setTimeout(() => playAITurn(updatedPlayers, currentShoe, nextIndex), 800);
+      // If next player is AI, play automatically after 1.5 seconds
+      if (updatedPlayers[nextIndex].type === 'ai' && !updatedPlayers[nextIndex].locked) {
+        setTimeout(() => {
+          playAITurn(nextIndex);
+        }, 1500);
       }
     }
   };
   
-  const playAITurn = (currentPlayers, currentShoe, aiIndex) => {
+  const playAITurn = (aiIndex) => {
+    // Use refs to get current state
+    const currentPlayers = playersRef.current;
+    const currentShoe = shoeRef.current;
+    const currentDealer = dealerRef.current;
+    
     const aiPlayer = currentPlayers[aiIndex];
-    if (!aiPlayer || aiPlayer.locked) {
-      moveToNextPlayer(currentPlayers, currentShoe);
+    if (!aiPlayer || aiPlayer.locked || aiPlayer.hand.length === 0) {
       return;
     }
     
-    const dealerUpCard = dealer.hand[0];
+    if (!currentDealer.hand[0]) return;
+    
+    const dealerUpCard = currentDealer.hand[0];
     const decision = getAIDecision(aiPlayer.hand, dealerUpCard);
     
     let updatedPlayers = [...currentPlayers];
+    let updatedShoe = [...currentShoe];
     
     if (decision === 'hit') {
-      updatedPlayers[aiIndex].hand.push(currentShoe.pop());
+      updatedPlayers[aiIndex].hand.push(updatedShoe.pop());
       const handValue = calculateHandValue(updatedPlayers[aiIndex].hand);
       
       setPlayers(updatedPlayers);
-      setShoe(currentShoe);
+      setShoe(updatedShoe);
       
       if (handValue > 21) {
-        // AI busted
-        setTimeout(() => moveToNextPlayer(updatedPlayers, currentShoe), 600);
+        // AI busted, move to next player after 1 second
+        setTimeout(() => moveToNextPlayer(updatedPlayers, updatedShoe), 1000);
       } else {
-        // AI continues playing
-        setTimeout(() => playAITurn(updatedPlayers, currentShoe, aiIndex), 800);
+        // AI continues playing after 1.5 seconds (max thinking time)
+        setTimeout(() => playAITurn(aiIndex), 1500);
       }
     } else if (decision === 'stand') {
       setPlayers(updatedPlayers);
-      setShoe(currentShoe);
-      setTimeout(() => moveToNextPlayer(updatedPlayers, currentShoe), 600);
+      setShoe(updatedShoe);
+      // Move to next player after 1 second
+      setTimeout(() => moveToNextPlayer(updatedPlayers, updatedShoe), 1000);
     } else if (decision === 'double') {
       if (aiPlayer.coins >= 5 && aiPlayer.hand.length === 2) {
         updatedPlayers[aiIndex].coins -= 5;
         updatedPlayers[aiIndex].bet += 5;
-        updatedPlayers[aiIndex].hand.push(currentShoe.pop());
+        updatedPlayers[aiIndex].hand.push(updatedShoe.pop());
         setPlayers(updatedPlayers);
-        setShoe(currentShoe);
-        setTimeout(() => moveToNextPlayer(updatedPlayers, currentShoe), 600);
+        setShoe(updatedShoe);
+        setTimeout(() => moveToNextPlayer(updatedPlayers, updatedShoe), 1000);
       } else {
         // Can't double, hit instead
-        updatedPlayers[aiIndex].hand.push(currentShoe.pop());
+        updatedPlayers[aiIndex].hand.push(updatedShoe.pop());
         setPlayers(updatedPlayers);
-        setShoe(currentShoe);
-        setTimeout(() => playAITurn(updatedPlayers, currentShoe, aiIndex), 800);
+        setShoe(updatedShoe);
+        setTimeout(() => playAITurn(aiIndex), 1500);
       }
     } else if (decision === 'split') {
       if (aiPlayer.coins >= 5 && aiPlayer.hand.length === 2 && 
-          aiPlayer.hand[0].value === aiPlayer.hand[1].value) {
+          aiPlayer.hand[0].value === aiPlayer.hand[1].value && !aiPlayer.splitHand) {
         updatedPlayers[aiIndex].coins -= 5;
         const card1 = aiPlayer.hand[0];
         const card2 = aiPlayer.hand[1];
-        updatedPlayers[aiIndex].hand = [card1, currentShoe.pop()];
-        updatedPlayers[aiIndex].splitHand = [card2, currentShoe.pop()];
+        updatedPlayers[aiIndex].hand = [card1, updatedShoe.pop()];
+        updatedPlayers[aiIndex].splitHand = [card2, updatedShoe.pop()];
         updatedPlayers[aiIndex].playingSplit = false;
         setPlayers(updatedPlayers);
-        setShoe(currentShoe);
-        setTimeout(() => playAITurn(updatedPlayers, currentShoe, aiIndex), 800);
+        setShoe(updatedShoe);
+        setTimeout(() => playAITurn(aiIndex), 1500);
       } else {
-        // Can't split, use alternative strategy
-        const altDecision = getAIDecision(aiPlayer.hand, dealerUpCard);
-        if (altDecision === 'hit') {
-          updatedPlayers[aiIndex].hand.push(currentShoe.pop());
-          setPlayers(updatedPlayers);
-          setShoe(currentShoe);
-          setTimeout(() => playAITurn(updatedPlayers, currentShoe, aiIndex), 800);
-        } else {
-          setTimeout(() => moveToNextPlayer(updatedPlayers, currentShoe), 600);
-        }
+        // Can't split, hit instead
+        updatedPlayers[aiIndex].hand.push(updatedShoe.pop());
+        setPlayers(updatedPlayers);
+        setShoe(updatedShoe);
+        setTimeout(() => playAITurn(aiIndex), 1500);
       }
     }
   };
