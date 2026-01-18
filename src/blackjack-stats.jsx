@@ -1162,21 +1162,50 @@ const BlackjackStats = () => {
     
     // Save game history for replay
     const history = {
-      players: updatedPlayers.map(p => ({
-        name: p.name,
-        type: p.type,
-        initialCoins: p.coins - (p.bet * 2), // Coins before this round
-        bet: p.bet,
-        hand: p.hand,
-        splitHand: p.splitHand,
-        handValue: calculateHandValue(p.hand),
-        splitHandValue: p.splitHand ? calculateHandValue(p.splitHand) : null,
-        busted: calculateHandValue(p.hand) > 21,
-        finalCoins: p.coins,
-        result: p.coins > (p.coins - (p.bet * 2)) ? 'WIN' : 
-                p.coins === (p.coins - (p.bet * 2)) ? 'PUSH' : 'LOSE',
-        decisions: p.decisions || [] // Include all decisions made
-      })),
+      players: updatedPlayers.map(p => {
+        // Calculate initial coins BEFORE this round
+        // Current coins already include winnings (or lack thereof)
+        // To get coins before bet: if player had bet, they had bet deducted
+        // So: initialCoins = currentCoins - winnings + bet
+        let initialCoins;
+        if (p.bet > 0) {
+          // Player participated - calculate what they had before betting
+          const playerValue = calculateHandValue(p.hand);
+          const playerBusted = playerValue > 21;
+          
+          if (playerBusted) {
+            // Lost - had no winnings
+            initialCoins = p.coins + p.bet; // Add back the bet they lost
+          } else if (dealerBusted || playerValue > dealerValue) {
+            // Won - got bet * 2
+            initialCoins = p.coins - (p.bet * 2) + p.bet; // Remove winnings, add back bet = p.coins - p.bet
+          } else if (playerValue === dealerValue) {
+            // Push - got bet back
+            initialCoins = p.coins; // Same as before (bet was returned)
+          } else {
+            // Lost - had no winnings  
+            initialCoins = p.coins + p.bet; // Add back the bet they lost
+          }
+        } else {
+          initialCoins = p.coins; // Didn't play
+        }
+        
+        return {
+          name: p.name,
+          type: p.type,
+          initialCoins: initialCoins,
+          bet: p.bet,
+          hand: p.hand,
+          splitHand: p.splitHand,
+          handValue: calculateHandValue(p.hand),
+          splitHandValue: p.splitHand ? calculateHandValue(p.splitHand) : null,
+          busted: calculateHandValue(p.hand) > 21,
+          finalCoins: p.coins,
+          result: p.coins > initialCoins ? 'WIN' : 
+                  p.coins === initialCoins ? 'PUSH' : 'LOSE',
+          decisions: p.decisions || []
+        };
+      }),
       dealer: {
         hand: dealerHand,
         value: dealerValue,
