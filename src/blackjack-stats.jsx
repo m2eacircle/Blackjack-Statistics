@@ -592,29 +592,61 @@ const BlackjackStats = () => {
     let currentShoe = [...shoe];
     let updatedPlayers = [...players];
     
+    // Determine which hand we're playing
+    const playingSplitHand = player.splitHand && player.playingSplit;
+    const activeHand = playingSplitHand ? 'splitHand' : 'hand';
+    
     if (action === 'hit') {
-      updatedPlayers[currentPlayerIndex].hand.push(currentShoe.pop());
-      const handValue = calculateHandValue(updatedPlayers[currentPlayerIndex].hand);
+      updatedPlayers[currentPlayerIndex][activeHand].push(currentShoe.pop());
+      const handValue = calculateHandValue(updatedPlayers[currentPlayerIndex][activeHand]);
       
       if (handValue > 21) {
-        // Busted - move to next player
-        moveToNextPlayer(updatedPlayers, currentShoe);
+        // Busted
+        if (playingSplitHand || !player.splitHand) {
+          // If second hand busted OR no split, move to next player
+          moveToNextPlayer(updatedPlayers, currentShoe);
+        } else {
+          // First hand busted, switch to second hand
+          updatedPlayers[currentPlayerIndex].playingSplit = true;
+          setPlayers(updatedPlayers);
+          setShoe(currentShoe);
+        }
       } else {
         setPlayers(updatedPlayers);
         setShoe(currentShoe);
       }
     } else if (action === 'stand') {
-      moveToNextPlayer(updatedPlayers, currentShoe);
+      if (playingSplitHand || !player.splitHand) {
+        // If second hand stands OR no split, move to next player
+        moveToNextPlayer(updatedPlayers, currentShoe);
+      } else {
+        // First hand stands, switch to second hand
+        updatedPlayers[currentPlayerIndex].playingSplit = true;
+        setPlayers(updatedPlayers);
+        setShoe(currentShoe);
+      }
     } else if (action === 'double') {
       if (player.coins >= 5) {
         updatedPlayers[currentPlayerIndex].coins -= 5;
         updatedPlayers[currentPlayerIndex].bet += 5;
-        updatedPlayers[currentPlayerIndex].hand.push(currentShoe.pop());
-        moveToNextPlayer(updatedPlayers, currentShoe);
+        updatedPlayers[currentPlayerIndex][activeHand].push(currentShoe.pop());
+        
+        if (playingSplitHand || !player.splitHand) {
+          // If second hand doubles OR no split, move to next player
+          moveToNextPlayer(updatedPlayers, currentShoe);
+        } else {
+          // First hand doubled, switch to second hand
+          updatedPlayers[currentPlayerIndex].playingSplit = true;
+          setPlayers(updatedPlayers);
+          setShoe(currentShoe);
+        }
       }
     } else if (action === 'split') {
+      console.log('SPLIT clicked! Player:', player);
+      console.log('Can split?', player.coins >= 5, player.hand.length === 2, player.hand[0].value === player.hand[1].value, !player.splitHand);
+      
       if (player.coins >= 5 && player.hand.length === 2 && 
-          player.hand[0].value === player.hand[1].value) {
+          player.hand[0].value === player.hand[1].value && !player.splitHand) {
         // Deduct additional bet for split hand
         updatedPlayers[currentPlayerIndex].coins -= 5;
         
@@ -622,13 +654,22 @@ const BlackjackStats = () => {
         const card1 = player.hand[0];
         const card2 = player.hand[1];
         
+        console.log('Splitting:', card1, 'and', card2);
+        
         // First hand gets one new card
         updatedPlayers[currentPlayerIndex].hand = [card1, currentShoe.pop()];
         updatedPlayers[currentPlayerIndex].splitHand = [card2, currentShoe.pop()];
-        updatedPlayers[currentPlayerIndex].playingSplit = false; // Playing first hand
+        updatedPlayers[currentPlayerIndex].playingSplit = false; // Start with first hand
+        
+        console.log('After split:');
+        console.log('Hand 1:', updatedPlayers[currentPlayerIndex].hand);
+        console.log('Hand 2 (split):', updatedPlayers[currentPlayerIndex].splitHand);
+        console.log('Playing split?', updatedPlayers[currentPlayerIndex].playingSplit);
         
         setPlayers(updatedPlayers);
         setShoe(currentShoe);
+      } else {
+        console.log('SPLIT conditions not met!');
       }
     }
   };
@@ -1418,9 +1459,12 @@ const BlackjackStats = () => {
   
   // Game screen
   const currentPlayer = players[currentPlayerIndex];
+  const activeHand = currentPlayer && currentPlayer.splitHand && currentPlayer.playingSplit 
+    ? currentPlayer.splitHand 
+    : (currentPlayer ? currentPlayer.hand : []);
   const canHit = gamePhase === 'playing' && currentPlayer && currentPlayer.type === 'human' && !currentPlayer.locked;
-  const canDouble = canHit && currentPlayer.hand.length === 2 && currentPlayer.coins >= 5;
-  const canSplit = canHit && currentPlayer.hand.length === 2 && 
+  const canDouble = canHit && activeHand.length === 2 && currentPlayer.coins >= 5;
+  const canSplit = canHit && !currentPlayer.splitHand && currentPlayer.hand.length === 2 && 
                    currentPlayer.hand[0].value === currentPlayer.hand[1].value && 
                    currentPlayer.coins >= 5;
   
@@ -1515,9 +1559,39 @@ const BlackjackStats = () => {
                     </div>
                   )}
                   
+                  {/* Show which hand is being played when split */}
+                  {player.splitHand && (
+                    <div style={{ color: '#fbbf24', marginBottom: '10px', fontSize: '0.9rem', textAlign: 'center', fontWeight: 'bold' }}>
+                      Playing Hand {player.playingSplit ? '2' : '1'} of 2
+                    </div>
+                  )}
+                  
+                  {/* Card display - show both hands if split */}
                   <div className="hand-display">
+                    {/* First hand */}
                     {player.hand.map((card, cardIdx) => (
-                      <div key={cardIdx} className="card">
+                      <div key={`hand1-${cardIdx}`} className={`card ${player.playingSplit && player.splitHand ? 'dimmed' : ''}`}>
+                        <span className={`card-suit ${card.suit === '♥' || card.suit === '♦' ? 'red' : ''}`}>
+                          {card.suit}
+                        </span>
+                        <span className="card-value">{card.display}</span>
+                      </div>
+                    ))}
+                    
+                    {/* Divider between split hands */}
+                    {player.splitHand && (
+                      <div style={{ 
+                        width: '3px', 
+                        background: 'rgba(251, 191, 36, 0.5)', 
+                        margin: '0 10px',
+                        height: '112px',
+                        borderRadius: '2px'
+                      }} />
+                    )}
+                    
+                    {/* Second hand (split hand) */}
+                    {player.splitHand && player.splitHand.map((card, cardIdx) => (
+                      <div key={`hand2-${cardIdx}`} className={`card ${!player.playingSplit ? 'dimmed' : ''}`}>
                         <span className={`card-suit ${card.suit === '♥' || card.suit === '♦' ? 'red' : ''}`}>
                           {card.suit}
                         </span>
@@ -1526,10 +1600,19 @@ const BlackjackStats = () => {
                     ))}
                   </div>
                   
+                  {/* Hand values */}
                   {player.hand.length > 0 && (
                     <div className="hand-value">
-                      Total: {calculateHandValue(player.hand)}
+                      Hand 1: {calculateHandValue(player.hand)}
                       {calculateHandValue(player.hand) > 21 && <span className="bust"> BUST!</span>}
+                      
+                      {player.splitHand && (
+                        <>
+                          {' | '}
+                          Hand 2: {calculateHandValue(player.splitHand)}
+                          {calculateHandValue(player.splitHand) > 21 && <span className="bust"> BUST!</span>}
+                        </>
+                      )}
                     </div>
                   )}
                 </>
@@ -1555,7 +1638,7 @@ const BlackjackStats = () => {
                 <div className="btn-content">
                   <span>HIT</span>
                   <span className="win-prob">
-                    {calculateWinProbability(currentPlayer.hand, dealer.hand[0], 'hit', null)}%
+                    {calculateWinProbability(activeHand, dealer.hand[0], 'hit', null)}%
                   </span>
                 </div>
               </button>
@@ -1567,7 +1650,7 @@ const BlackjackStats = () => {
                 <div className="btn-content">
                   <span>STAND</span>
                   <span className="win-prob">
-                    {calculateWinProbability(currentPlayer.hand, dealer.hand[0], 'stand', null)}%
+                    {calculateWinProbability(activeHand, dealer.hand[0], 'stand', null)}%
                   </span>
                 </div>
               </button>
@@ -1580,7 +1663,7 @@ const BlackjackStats = () => {
                   <div className="btn-content">
                     <span>DOUBLE</span>
                     <span className="win-prob">
-                      {calculateWinProbability(currentPlayer.hand, dealer.hand[0], 'double', null)}%
+                      {calculateWinProbability(activeHand, dealer.hand[0], 'double', null)}%
                     </span>
                   </div>
                 </button>
