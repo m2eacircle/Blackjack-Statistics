@@ -820,17 +820,44 @@ const BlackjackStats = () => {
   // Update players when number of AI players changes
   useEffect(() => {
     if (gamePhase === 'setup') {
+      // Load saved coins if available
+      const savedCoins = localStorage.getItem('blackjackPlayerCoins');
+      let coinsByPlayerId = {};
+      
+      if (savedCoins) {
+        try {
+          const coinsData = JSON.parse(savedCoins);
+          const now = Date.now();
+          
+          // Check if data is still valid (within 24 hours)
+          if (coinsData.timestamp && (now - coinsData.timestamp < 24 * 60 * 60 * 1000)) {
+            coinsByPlayerId = coinsData.coins;
+          }
+        } catch (e) {
+          console.error('Error loading saved coins:', e);
+        }
+      }
+      
       const newPlayers = [
-        { id: 1, type: 'human', name: 'Human Player', coins: 100, hand: [], bet: 0, locked: false }
+        { 
+          id: 1, 
+          type: 'human', 
+          name: 'Human Player', 
+          coins: coinsByPlayerId[1] !== undefined ? coinsByPlayerId[1] : 100, 
+          hand: [], 
+          bet: 0, 
+          locked: false 
+        }
       ];
       
       // Add AI players based on selection (2-4)
       for (let i = 0; i < numAIPlayers; i++) {
+        const playerId = i + 2;
         newPlayers.push({
-          id: i + 2,
+          id: playerId,
           type: 'ai',
           name: `AI ${i + 1}`,
-          coins: 100,
+          coins: coinsByPlayerId[playerId] !== undefined ? coinsByPlayerId[playerId] : 100,
           hand: [],
           bet: 0,
           locked: false
@@ -840,6 +867,48 @@ const BlackjackStats = () => {
       setPlayers(newPlayers);
     }
   }, [numAIPlayers, gamePhase]);
+  
+  // Load saved coins on mount
+  useEffect(() => {
+    const savedCoins = localStorage.getItem('blackjackPlayerCoins');
+    if (savedCoins) {
+      try {
+        const coinsData = JSON.parse(savedCoins);
+        const now = Date.now();
+        
+        // Check if data is still valid (within 24 hours)
+        if (coinsData.timestamp && (now - coinsData.timestamp < 24 * 60 * 60 * 1000)) {
+          setPlayers(prevPlayers => 
+            prevPlayers.map(player => ({
+              ...player,
+              coins: coinsData.coins[player.id] !== undefined ? coinsData.coins[player.id] : 100
+            }))
+          );
+        } else {
+          // Data expired, remove it
+          localStorage.removeItem('blackjackPlayerCoins');
+        }
+      } catch (e) {
+        console.error('Error loading saved coins:', e);
+      }
+    }
+  }, []);
+  
+  // Save coins whenever players change
+  useEffect(() => {
+    if (players.length > 0 && gamePhase !== 'setup') {
+      const coinsData = {
+        timestamp: Date.now(),
+        coins: {}
+      };
+      
+      players.forEach(player => {
+        coinsData.coins[player.id] = player.coins;
+      });
+      
+      localStorage.setItem('blackjackPlayerCoins', JSON.stringify(coinsData));
+    }
+  }, [players, gamePhase]);
   
   useEffect(() => {
     const terms = localStorage.getItem('blackjackTermsAccepted');
