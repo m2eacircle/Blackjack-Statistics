@@ -2025,8 +2025,16 @@ const BlackjackStats = () => {
             </div>
           </div>
           
-          <button className="start-btn" onClick={startGame}>
-            Start Game
+          <button 
+            className="start-btn" 
+            onClick={startGame}
+            disabled={players[0]?.coins === 0}
+            style={{
+              opacity: players[0]?.coins === 0 ? 0.5 : 1,
+              cursor: players[0]?.coins === 0 ? 'not-allowed' : 'pointer'
+            }}
+          >
+            {players[0]?.coins === 0 ? '⏳ Wait for 24 hours' : 'Start Game'}
           </button>
           
           <button className="back-btn" onClick={() => {
