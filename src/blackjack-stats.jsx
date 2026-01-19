@@ -695,7 +695,8 @@ const ReplayModal = ({ onClose, gameHistory }) => {
                 </div>
               </div>
             </div>
-          ))}
+          );
+          })}
         </div>
         
         <div style={{ padding: '20px 30px 30px 30px', textAlign: 'center', borderTop: '2px solid rgba(255,255,255,0.2)' }}>
