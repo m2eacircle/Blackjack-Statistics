@@ -1787,13 +1787,12 @@ const BlackjackStats = () => {
             </button>
             
             <button 
-              className="mode-card disabled"
-              disabled
-              title="Coming soon - special rules required"
+              className="mode-card"
+              onClick={() => setGameMode('switch')}
             >
               <div className="mode-icon">♥</div>
               <h3>Switch</h3>
-              <p>Coming soon</p>
+              <p>Switch cards between hands</p>
             </button>
             
             <button 
