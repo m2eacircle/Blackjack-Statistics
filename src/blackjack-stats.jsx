@@ -1150,24 +1150,43 @@ const BlackjackStats = () => {
     updatedPlayers = updatedPlayers.map(player => {
       if (player.locked || player.bet === 0) return player;
       
+      let totalWinnings = 0;
+      
+      // Calculate winnings for main hand
       const playerValue = calculateHandValue(player.hand);
       const playerBusted = playerValue > 21;
       
-      let winnings = 0;
-      
+      let mainHandWinnings = 0;
       if (playerBusted) {
-        // Player loses bet (already deducted)
-        winnings = 0;
+        mainHandWinnings = 0; // Lose bet
       } else if (dealerBusted || playerValue > dealerValue) {
-        // Player wins
-        winnings = player.bet * 2;
+        mainHandWinnings = player.bet * 2; // Win
       } else if (playerValue === dealerValue) {
-        // Push
-        winnings = player.bet;
+        mainHandWinnings = player.bet; // Push
       }
-      // else player loses (winnings stays 0)
+      // else lose (0)
       
-      const newCoins = player.coins + winnings;
+      totalWinnings += mainHandWinnings;
+      
+      // Calculate winnings for split hand if exists
+      if (player.splitHand) {
+        const splitValue = calculateHandValue(player.splitHand);
+        const splitBusted = splitValue > 21;
+        
+        let splitHandWinnings = 0;
+        if (splitBusted) {
+          splitHandWinnings = 0; // Lose bet
+        } else if (dealerBusted || splitValue > dealerValue) {
+          splitHandWinnings = player.bet * 2; // Win (same bet amount)
+        } else if (splitValue === dealerValue) {
+          splitHandWinnings = player.bet; // Push
+        }
+        // else lose (0)
+        
+        totalWinnings += splitHandWinnings;
+      }
+      
+      const newCoins = player.coins + totalWinnings;
       
       // Check if player is locked out
       let isLocked = false;
