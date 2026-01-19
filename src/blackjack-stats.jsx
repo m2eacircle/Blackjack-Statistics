@@ -904,8 +904,9 @@ const BlackjackStats = () => {
   // Update players when number of AI players changes
   useEffect(() => {
     if (gamePhase === 'setup') {
-      // Load saved coins if available
-      const savedCoins = localStorage.getItem('blackjackPlayerCoins');
+      // Load saved coins if available - use different key per game mode
+      const coinKey = gameMode === 'switch' ? 'blackjackSwitchPlayerCoins' : 'blackjackPlayerCoins';
+      const savedCoins = localStorage.getItem(coinKey);
       let coinsByPlayerId = {};
       
       if (savedCoins) {
@@ -952,7 +953,7 @@ const BlackjackStats = () => {
       
       setPlayers(newPlayers);
     }
-  }, [numAIPlayers, gamePhase]);
+  }, [numAIPlayers, gamePhase, gameMode]);
   
   // Load saved coins on mount
   useEffect(() => {
@@ -972,7 +973,7 @@ const BlackjackStats = () => {
           );
         } else {
           // Data expired, remove it
-          localStorage.removeItem('blackjackPlayerCoins');
+          localStorage.removeItem(coinKey);
         }
       } catch (e) {
         console.error('Error loading saved coins:', e);
@@ -980,9 +981,10 @@ const BlackjackStats = () => {
     }
   }, []);
   
-  // Save coins whenever players change
+  // Save coins whenever players change - use different key per game mode
   useEffect(() => {
-    if (players.length > 0 && gamePhase !== 'setup') {
+    if (players.length > 0 && gamePhase !== 'setup' && gameMode) {
+      const coinKey = gameMode === 'switch' ? 'blackjackSwitchPlayerCoins' : 'blackjackPlayerCoins';
       const coinsData = {
         timestamp: Date.now(),
         coins: {}
@@ -992,9 +994,9 @@ const BlackjackStats = () => {
         coinsData.coins[player.id] = player.coins;
       });
       
-      localStorage.setItem('blackjackPlayerCoins', JSON.stringify(coinsData));
+      localStorage.setItem(coinKey, JSON.stringify(coinsData));
     }
-  }, [players, gamePhase]);
+  }, [players, gamePhase, gameMode]);
   
   useEffect(() => {
     const terms = localStorage.getItem('blackjackTermsAccepted');
@@ -1392,9 +1394,10 @@ const BlackjackStats = () => {
       let isLocked = false;
       if (newCoins === 0) {
         const lockTime = Date.now() + (24 * 60 * 60 * 1000); // 24 hours
-        const lockedPlayers = JSON.parse(localStorage.getItem('lockedPlayers') || '{}');
+        const lockKey = gameMode === 'switch' ? 'lockedSwitchPlayers' : 'lockedPlayers';
+        const lockedPlayers = JSON.parse(localStorage.getItem(lockKey) || '{}');
         lockedPlayers[player.id] = lockTime;
-        localStorage.setItem('lockedPlayers', JSON.stringify(lockedPlayers));
+        localStorage.setItem(lockKey, JSON.stringify(lockedPlayers));
         isLocked = true;
       }
       
@@ -1419,10 +1422,12 @@ const BlackjackStats = () => {
       setPlayers(resetPlayers);
       
       // Clear locked players from localStorage
-      localStorage.removeItem('lockedPlayers');
+      const lockKey = gameMode === 'switch' ? 'lockedSwitchPlayers' : 'lockedPlayers';
+      const coinKey = gameMode === 'switch' ? 'blackjackSwitchPlayerCoins' : 'blackjackPlayerCoins';
+      localStorage.removeItem(lockKey);
       
       // Clear saved coins so they start fresh
-      localStorage.removeItem('blackjackPlayerCoins');
+      localStorage.removeItem(coinKey);
       
       // Show message and go back to setup
       alert('All AI players are out of coins! Resetting everyone to 100 coins. Please set up a new game.');
@@ -1511,10 +1516,12 @@ const BlackjackStats = () => {
       setPlayers(resetPlayers);
       
       // Clear locked players from localStorage
-      localStorage.removeItem('lockedPlayers');
+      const lockKey = gameMode === 'switch' ? 'lockedSwitchPlayers' : 'lockedPlayers';
+      const coinKey = gameMode === 'switch' ? 'blackjackSwitchPlayerCoins' : 'blackjackPlayerCoins';
+      localStorage.removeItem(lockKey);
       
       // Clear saved coins so they start fresh
-      localStorage.removeItem('blackjackPlayerCoins');
+      localStorage.removeItem(coinKey);
       
       // Show message and go back to setup
       alert('All AI players are out of coins! Everyone has been reset to 100 coins. Please set up a new game.');
@@ -1565,10 +1572,12 @@ const BlackjackStats = () => {
       setPlayers(resetPlayers);
       
       // Clear locked players from localStorage
-      localStorage.removeItem('lockedPlayers');
+      const lockKey = gameMode === 'switch' ? 'lockedSwitchPlayers' : 'lockedPlayers';
+      const coinKey = gameMode === 'switch' ? 'blackjackSwitchPlayerCoins' : 'blackjackPlayerCoins';
+      localStorage.removeItem(lockKey);
       
       // Clear saved coins so they start fresh
-      localStorage.removeItem('blackjackPlayerCoins');
+      localStorage.removeItem(coinKey);
       
       // Show message and go back to setup
       alert('All AI players are out of coins! Everyone has been reset to 100 coins. Please set up a new game.');
