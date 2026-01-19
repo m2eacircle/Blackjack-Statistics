@@ -958,7 +958,27 @@ const BlackjackStats = () => {
     return newShoe;
   };
   
+  const resetGameState = () => {
+    // Reset all game state
+    setDealer({ hand: [], showAll: false });
+    setShoe([]);
+    setCurrentPlayerIndex(0);
+    setGameHistory(null);
+    setShowReplay(false);
+    
+    // Reset player hands and bets (keep coins)
+    setPlayers(prevPlayers => prevPlayers.map(player => ({
+      ...player,
+      hand: [],
+      splitHand: null,
+      playingSplit: false,
+      bet: 0,
+      decisions: []
+    })));
+  };
+  
   const startGame = () => {
+    resetGameState();
     const newShoe = initializeShoe(numDecks);
     setShoe(newShoe);
     setGamePhase('betting');
@@ -1801,7 +1821,10 @@ const BlackjackStats = () => {
             Start Game
           </button>
           
-          <button className="back-btn" onClick={() => setGameMode(null)}>
+          <button className="back-btn" onClick={() => {
+            resetGameState();
+            setGameMode(null);
+          }}>
             ← Back to Mode Selection
           </button>
         </div>
@@ -2389,7 +2412,10 @@ const BlackjackStats = () => {
               </button>
               <button 
                 className="action-btn" 
-                onClick={() => setGamePhase('setup')}
+                onClick={() => {
+                  resetGameState();
+                  setGamePhase('setup');
+                }}
                 style={{ flex: '1', minWidth: '200px', background: '#ef4444' }}
               >
                 ⚙️ Back to Game Setup
