@@ -1220,7 +1220,7 @@ const BlackjackStats = () => {
           id: 1, 
           type: 'human', 
           name: 'Human Player', 
-          coins: coinsByPlayerId[1] !== undefined ? coinsByPlayerId[1] : 100, 
+          coins: coinsByPlayerId[1] !== undefined ? coinsByPlayerId[1] : (gameMode === 'switch' ? 300 : 100), 
           hand: [], 
           bet: 0, 
           locked: false 
@@ -1234,7 +1234,7 @@ const BlackjackStats = () => {
           id: playerId,
           type: 'ai',
           name: `AI ${i + 1}`,
-          coins: coinsByPlayerId[playerId] !== undefined ? coinsByPlayerId[playerId] : 100,
+          coins: coinsByPlayerId[playerId] !== undefined ? coinsByPlayerId[playerId] : (gameMode === 'switch' ? 300 : 100),
           hand: [],
           splitHand: null,
           numSplits: 0,
@@ -1366,9 +1366,10 @@ const BlackjackStats = () => {
   };
   
   const placeBets = () => {
+    const betAmount = gameMode === 'switch' ? 10 : 5;
     const updatedPlayers = players.map(player => {
-      if (!player.locked && player.coins >= 5) {
-        return { ...player, bet: 5, coins: player.coins - 5 };
+      if (!player.locked && player.coins >= betAmount) {
+        return { ...player, bet: betAmount, coins: player.coins - betAmount };
       }
       return player;
     });
@@ -1791,10 +1792,11 @@ const BlackjackStats = () => {
     const allAIBroke = aiPlayers.length > 0 && aiPlayers.every(p => p.coins === 0);
     
     if (allAIBroke) {
-      // Reset ALL players to 100 coins and clear locks (exception rule)
+      // Reset ALL players to mode-specific starting coins and clear locks (exception rule)
+      const startingCoins = gameMode === 'switch' ? 300 : 100;
       const resetPlayers = updatedPlayers.map(player => ({
         ...player,
-        coins: 100,
+        coins: startingCoins,
         locked: false
       }));
       
@@ -1809,7 +1811,7 @@ const BlackjackStats = () => {
       localStorage.removeItem(coinKey);
       
       // Show message and go back to setup
-      alert('All AI players are out of coins! Resetting everyone to 100 coins. Please set up a new game.');
+      alert(`All AI players are out of coins! Resetting everyone to ${startingCoins} coins. Please set up a new game.`);
       resetGameState();
       setGamePhase('setup');
       return; // Exit early, don't save game history
@@ -1879,10 +1881,11 @@ const BlackjackStats = () => {
     const allAIBroke = aiPlayers.length > 0 && aiPlayers.every(p => p.coins === 0);
     
     if (allAIBroke) {
-      // Reset ALL players to 100 coins and clear locks (exception rule)
+      // Reset ALL players to mode-specific starting coins and clear locks (exception rule)
+      const startingCoins = gameMode === 'switch' ? 300 : 100;
       const resetPlayers = players.map(player => ({
         ...player,
-        coins: 100,
+        coins: startingCoins,
         locked: false,
         hand: [],
         splitHand: null,
@@ -1903,7 +1906,7 @@ const BlackjackStats = () => {
       localStorage.removeItem(coinKey);
       
       // Show message and go back to setup
-      alert('All AI players are out of coins! Everyone has been reset to 100 coins. Please set up a new game.');
+      alert(`All AI players are out of coins! Everyone has been reset to ${startingCoins} coins. Please set up a new game.`);
       resetGameState();
       setGamePhase('setup');
       return;
@@ -1935,10 +1938,11 @@ const BlackjackStats = () => {
     const allAIBroke = aiPlayers.length > 0 && aiPlayers.every(p => p.coins === 0);
     
     if (allAIBroke) {
-      // Reset ALL players to 100 coins and clear locks (exception rule)
+      // Reset ALL players to mode-specific starting coins and clear locks (exception rule)
+      const startingCoins = gameMode === 'switch' ? 300 : 100;
       const resetPlayers = players.map(player => ({
         ...player,
-        coins: 100,
+        coins: startingCoins,
         locked: false,
         hand: [],
         splitHand: null,
@@ -1959,7 +1963,7 @@ const BlackjackStats = () => {
       localStorage.removeItem(coinKey);
       
       // Show message and go back to setup
-      alert('All AI players are out of coins! Everyone has been reset to 100 coins. Please set up a new game.');
+      alert(`All AI players are out of coins! Everyone has been reset to ${startingCoins} coins. Please set up a new game.`);
       resetGameState();
       setGamePhase('setup');
       return;
@@ -1972,16 +1976,17 @@ const BlackjackStats = () => {
     }
     
     // Reset players and place bets immediately
+    const betAmount = gameMode === 'switch' ? 10 : 5;
     const resetPlayers = players.map(player => {
-      if (!player.locked && player.coins >= 5) {
+      if (!player.locked && player.coins >= betAmount) {
         return {
           ...player,
           hand: [],
           splitHand: null,
           playingSplit: false,
           numSplits: 0,
-          bet: 5,
-          coins: player.coins - 5
+          bet: betAmount,
+          coins: player.coins - betAmount
         };
       }
       return {
@@ -1990,7 +1995,6 @@ const BlackjackStats = () => {
         splitHand: null,
         playingSplit: false,
         numSplits: 0,
-        playingSplit: false,
         bet: 0
       };
     });
@@ -3029,7 +3033,7 @@ const BlackjackStats = () => {
         <div className="actions-section">
           {gamePhase === 'betting' && (
             <button className="action-btn primary" onClick={placeBets}>
-              Place Bets (5 coins)
+              Place Bets ({gameMode === 'switch' ? '10' : '5'} coins)
             </button>
           )}
           
@@ -3145,7 +3149,7 @@ const BlackjackStats = () => {
                 onClick={nextRoundAndBet}
                 style={{ flex: '1', minWidth: '250px' }}
               >
-                Next Round & Place Bets (5 coins)
+                Next Round & Place Bets ({gameMode === 'switch' ? '10' : '5'} coins)
               </button>
               <button 
                 className="action-btn" 
