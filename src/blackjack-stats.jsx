@@ -1252,7 +1252,7 @@ const BlackjackStats = () => {
           id: 1, 
           type: 'human', 
           name: 'Human Player', 
-          coins: coinsByPlayerId[1] !== undefined ? coinsByPlayerId[1] : (gameMode === 'switch' ? 300 : 100), 
+          coins: coinsByPlayerId[1] !== undefined ? coinsByPlayerId[1] : (gameMode === 'switch' ? 500 : 200), 
           hand: [], 
           bet: 0, 
           locked: false 
@@ -1266,7 +1266,7 @@ const BlackjackStats = () => {
           id: playerId,
           type: 'ai',
           name: `AI ${i + 1}`,
-          coins: coinsByPlayerId[playerId] !== undefined ? coinsByPlayerId[playerId] : (gameMode === 'switch' ? 300 : 100),
+          coins: coinsByPlayerId[playerId] !== undefined ? coinsByPlayerId[playerId] : (gameMode === 'switch' ? 500 : 200),
           hand: [],
           splitHand: null,
           numSplits: 0,
@@ -1958,7 +1958,7 @@ const BlackjackStats = () => {
     
     if (allAIBroke) {
       // Reset ALL players to mode-specific starting coins and clear locks (exception rule)
-      const startingCoins = gameMode === 'switch' ? 300 : 100;
+      const startingCoins = gameMode === 'switch' ? 500 : 200;
       const resetPlayers = updatedPlayers.map(player => ({
         ...player,
         coins: startingCoins,
@@ -2047,7 +2047,7 @@ const BlackjackStats = () => {
     
     if (allAIBroke) {
       // Reset ALL players to mode-specific starting coins and clear locks (exception rule)
-      const startingCoins = gameMode === 'switch' ? 300 : 100;
+      const startingCoins = gameMode === 'switch' ? 500 : 200;
       const resetPlayers = players.map(player => ({
         ...player,
         coins: startingCoins,
@@ -2104,7 +2104,7 @@ const BlackjackStats = () => {
     
     if (allAIBroke) {
       // Reset ALL players to mode-specific starting coins and clear locks (exception rule)
-      const startingCoins = gameMode === 'switch' ? 300 : 100;
+      const startingCoins = gameMode === 'switch' ? 500 : 200;
       const resetPlayers = players.map(player => ({
         ...player,
         coins: startingCoins,
