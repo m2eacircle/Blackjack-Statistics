@@ -2979,30 +2979,45 @@ const BlackjackStats = () => {
                 <h4>{player.name}</h4>
                 <div className="player-stats">
                   <span>🪙 {player.coins}</span>
-                  {player.bet > 0 && <span className="bet-amount">Bet: {player.bet}</span>}
+                  {player.bet > 0 && (
+                    <span className="bet-amount">
+                      {gameMode === 'switch' && player.splitHand ? (
+                        <>Bet: 5 (H1) + 5 (H2)</>
+                      ) : (
+                        <>Bet: {player.bet}</>
+                      )}
+                    </span>
+                  )}
+                  {/* Show Super Match bet if exists */}
+                  {gameMode === 'switch' && player.superMatchBet > 0 && (
+                    <span className="bet-amount" style={{ background: '#ffd700', color: '#000' }}>
+                      💎 Super Match: {player.superMatchBet}
+                    </span>
+                  )}
                   {/* Show WIN/LOSE/PUSH badge during result phase */}
                   {gamePhase === 'result' && player.bet > 0 && (() => {
                     const dealerValue = calculateHandValue(dealer.hand);
                     const dealerBusted = dealerValue > 21;
                     
-                    // Function to calculate result for a hand
-                    const getHandResult = (hand) => {
+                    // Calculate actual winnings for each hand
+                    const calculateHandWinnings = (hand) => {
                       const handValue = calculateHandValue(hand);
                       const handBusted = handValue > 21;
+                      const betPerHand = 5;
                       
                       if (handBusted) {
-                        return 'LOSE';
+                        return { result: 'LOSE', coins: 0 };
                       } else if (dealerBusted || handValue > dealerValue) {
-                        return 'WIN';
+                        return { result: 'WIN', coins: betPerHand };
                       } else if (handValue === dealerValue) {
-                        return 'PUSH';
+                        return { result: 'PUSH', coins: 0 };
                       } else {
-                        return 'LOSE';
+                        return { result: 'LOSE', coins: 0 };
                       }
                     };
                     
-                    // Function to render badge
-                    const renderBadge = (result, label) => (
+                    // Function to render badge with coins
+                    const renderBadge = (result, coins, label) => (
                       <span style={{
                         padding: '4px 10px',
                         borderRadius: '12px',
@@ -3015,26 +3030,60 @@ const BlackjackStats = () => {
                         display: 'inline-block'
                       }}>
                         {label && <span style={{ opacity: 0.8, fontSize: '0.75rem' }}>{label}: </span>}
-                        {result === 'WIN' ? '🎉 WIN' : 
-                         result === 'LOSE' ? '💔 LOSE' : '🤝 PUSH'}
+                        {result === 'WIN' ? `🎉 WIN +${coins}` : 
+                         result === 'LOSE' ? `💔 LOSE` : `🤝 PUSH`}
                       </span>
                     );
                     
                     // Check if player has split hand
                     if (player.splitHand) {
-                      const hand1Result = getHandResult(player.hand);
-                      const hand2Result = getHandResult(player.splitHand);
+                      const hand1 = calculateHandWinnings(player.hand);
+                      const hand2 = calculateHandWinnings(player.splitHand);
                       
                       return (
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginLeft: '8px' }}>
-                          {renderBadge(hand1Result, 'H1')}
-                          {renderBadge(hand2Result, 'H2')}
+                          {renderBadge(hand1.result, hand1.coins, 'H1')}
+                          {renderBadge(hand2.result, hand2.coins, 'H2')}
+                          {/* Show Super Match result if exists */}
+                          {gameMode === 'switch' && player.superMatchResult && (
+                            <span style={{
+                              padding: '4px 10px',
+                              borderRadius: '12px',
+                              fontWeight: 'bold',
+                              fontSize: '0.8rem',
+                              background: player.superMatchResult.startsWith('WIN') ? '#ffd700' : '#666',
+                              color: player.superMatchResult.startsWith('WIN') ? '#000' : '#fff',
+                              marginLeft: '6px',
+                              display: 'inline-block'
+                            }}>
+                              💎 {player.superMatchResult}
+                            </span>
+                          )}
                         </div>
                       );
                     } else {
                       // Single hand
-                      const result = getHandResult(player.hand);
-                      return renderBadge(result, null);
+                      const hand = calculateHandWinnings(player.hand);
+                      return (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginLeft: '8px' }}>
+                          {renderBadge(hand.result, hand.coins, null)}
+                          {/* Show Super Match result if exists */}
+                          {gameMode === 'switch' && player.superMatchResult && (
+                            <span style={{
+                              padding: '4px 10px',
+                              borderRadius: '12px',
+                              fontWeight: 'bold',
+                              fontSize: '0.8rem',
+                              background: player.superMatchResult.startsWith('WIN') ? '#ffd700' : '#666',
+                              color: player.superMatchResult.startsWith('WIN') ? '#000' : '#fff',
+                              marginLeft: '6px',
+                              display: 'inline-block'
+                            }}>
+                              💎 {player.superMatchResult}
+                            </span>
+                          )}
+                        </div>
+                      );
                     }
                   })()}
                 </div>
