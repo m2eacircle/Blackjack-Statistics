@@ -315,7 +315,7 @@ const TermsModal = ({ onClose, alreadyAccepted }) => {
         
         <div style={{ padding: '30px', lineHeight: 1.6 }}>
           <p style={{ margin: '0 0 15px 0', color: '#333' }}>
-            By checking here, I acknowledge and agree that the blackjack and its 
+            By checking here, I acknowledge and agree that the casino games and their 
             statistical odds of winning information are for study purposes only and 
             may contain errors.
           </p>
@@ -2194,7 +2194,7 @@ const BlackjackStats = () => {
       <div className="terms-screen">
         <div className="terms-container">
           <div className="logo-section">
-            <h1 className="app-title">Blackjack Statistics</h1>
+            <h1 className="app-title">Casino Games Statistics</h1>
             <p className="app-subtitle">Learn Winning Odds Through Play</p>
           </div>
           
@@ -2326,7 +2326,7 @@ const BlackjackStats = () => {
         
         <div className="game-select-screen">
         <div className="header">
-          <h1 className="main-title">Blackjack Statistics</h1>
+          <h1 className="main-title">Casino Games Statistics</h1>
           <a href="https://www.m2eacircle.com/" className="circle-link">
             <Home size={24} />
             <span>m2ea Circle</span>
@@ -2334,14 +2334,14 @@ const BlackjackStats = () => {
         </div>
         
         <div className="mode-container">
-          <h2>Select Game Mode</h2>
+          <h2>Select Game</h2>
           <div className="mode-grid">
             <button 
               className="mode-card"
               onClick={() => setGameMode('regular')}
             >
               <div className="mode-icon">♠</div>
-              <h3>Regular</h3>
+              <h3>Blackjack Regular</h3>
               <p>Classic blackjack rules</p>
               <a 
                 href="#"
@@ -2368,7 +2368,7 @@ const BlackjackStats = () => {
               onClick={() => setGameMode('switch')}
             >
               <div className="mode-icon">♥</div>
-              <h3>Switch</h3>
+              <h3>Blackjack Switch</h3>
               <p>Switch cards between hands</p>
               <a 
                 href="#"
@@ -2396,7 +2396,7 @@ const BlackjackStats = () => {
               title="Coming soon - special rules required"
             >
               <div className="mode-icon">♦</div>
-              <h3>Bahama</h3>
+              <h3>Sic Bo</h3>
               <p>Coming soon</p>
             </button>
           </div>
@@ -2934,7 +2934,7 @@ const BlackjackStats = () => {
       <div className="game-screen">
       <div className="game-header">
         <div className="title-section">
-          <h1>Blackjack Statistics</h1>
+          <h1>Casino Games Statistics</h1>
           <span className="mode-badge">{gameMode.toUpperCase()}</span>
         </div>
         <a href="https://www.m2eacircle.com/" className="circle-link">
