@@ -2977,11 +2977,12 @@ const BlackjackStats = () => {
             >
               <div className="player-info">
                 <h4>{player.name}</h4>
-                <div className="player-stats">
+                <div className="player-stats" style={{ flexWrap: 'wrap' }}>
                   <span>🪙 {player.coins}</span>
                   {player.bet > 0 && (
                     <span className="bet-amount">
-                      {gameMode === 'switch' && player.splitHand ? (
+                      {player.splitHand ? (
+                        // Both Switch mode and Regular mode with split show separate bets
                         <>Bet: 5 (H1) + 5 (H2)</>
                       ) : (
                         <>Bet: {player.bet}</>
@@ -3041,7 +3042,7 @@ const BlackjackStats = () => {
                       const hand2 = calculateHandWinnings(player.splitHand);
                       
                       return (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginLeft: '8px' }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px', width: '100%' }}>
                           {renderBadge(hand1.result, hand1.coins, 'H1')}
                           {renderBadge(hand2.result, hand2.coins, 'H2')}
                           {/* Show Super Match result if exists */}
@@ -3053,7 +3054,6 @@ const BlackjackStats = () => {
                               fontSize: '0.8rem',
                               background: player.superMatchResult.startsWith('WIN') ? '#ffd700' : '#666',
                               color: player.superMatchResult.startsWith('WIN') ? '#000' : '#fff',
-                              marginLeft: '6px',
                               display: 'inline-block'
                             }}>
                               💎 {player.superMatchResult}
@@ -3065,7 +3065,7 @@ const BlackjackStats = () => {
                       // Single hand
                       const hand = calculateHandWinnings(player.hand);
                       return (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginLeft: '8px' }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px', width: '100%' }}>
                           {renderBadge(hand.result, hand.coins, null)}
                           {/* Show Super Match result if exists */}
                           {gameMode === 'switch' && player.superMatchResult && (
@@ -3076,7 +3076,6 @@ const BlackjackStats = () => {
                               fontSize: '0.8rem',
                               background: player.superMatchResult.startsWith('WIN') ? '#ffd700' : '#666',
                               color: player.superMatchResult.startsWith('WIN') ? '#000' : '#fff',
-                              marginLeft: '6px',
                               display: 'inline-block'
                             }}>
                               💎 {player.superMatchResult}
