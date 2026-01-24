@@ -3029,17 +3029,18 @@ const BlackjackStats = () => {
                     // Function to render badge with coins
                     const renderBadge = (result, coins, label) => (
                       <span style={{
-                        padding: '4px 10px',
+                        padding: '8px 12px',
                         borderRadius: '12px',
                         fontWeight: 'bold',
-                        fontSize: '0.8rem',
+                        fontSize: '0.9rem',
                         background: result === 'WIN' ? '#10b981' : 
                                    result === 'LOSE' ? '#ef4444' : '#fbbf24',
                         color: 'white',
-                        marginLeft: '6px',
-                        display: 'inline-block'
+                        display: 'inline-block',
+                        minWidth: 'fit-content',
+                        textAlign: 'center'
                       }}>
-                        {label && <span style={{ opacity: 0.8, fontSize: '0.75rem' }}>{label}: </span>}
+                        {label && <span style={{ opacity: 0.8, fontSize: '0.8rem' }}>{label}: </span>}
                         {result === 'WIN' ? `🎉 WIN +${coins}` : 
                          result === 'LOSE' ? `💔 LOSE` : `🤝 PUSH`}
                       </span>
@@ -3051,7 +3052,15 @@ const BlackjackStats = () => {
                       const hand2 = calculateHandWinnings(player.splitHand);
                       
                       return (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px', width: '100%' }}>
+                        <div style={{ 
+                          display: 'flex', 
+                          flexWrap: 'wrap', 
+                          gap: '6px', 
+                          marginTop: '8px', 
+                          width: '100%',
+                          justifyContent: 'flex-start',
+                          alignItems: 'center'
+                        }}>
                           {/* Show Super Match result FIRST if exists */}
                           {gameMode === 'switch' && player.superMatchResult && (
                             <span style={{
@@ -3076,7 +3085,15 @@ const BlackjackStats = () => {
                       // Single hand
                       const hand = calculateHandWinnings(player.hand);
                       return (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px', width: '100%' }}>
+                        <div style={{ 
+                          display: 'flex', 
+                          flexWrap: 'wrap', 
+                          gap: '6px', 
+                          marginTop: '8px', 
+                          width: '100%',
+                          justifyContent: 'flex-start',
+                          alignItems: 'center'
+                        }}>
                           {/* Show Super Match result FIRST if exists */}
                           {gameMode === 'switch' && player.superMatchResult && (
                             <span style={{
