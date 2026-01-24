@@ -2152,7 +2152,8 @@ const BlackjackStats = () => {
           playingSplit: false,
           numSplits: 0,
           bet: betAmount,
-          coins: player.coins - betAmount
+          coins: player.coins - betAmount,
+          superMatchBet: 0  // Reset Super Match bet
         };
       }
       return {
@@ -2161,15 +2162,22 @@ const BlackjackStats = () => {
         splitHand: null,
         playingSplit: false,
         numSplits: 0,
-        bet: 0
+        bet: 0,
+        superMatchBet: 0  // Reset Super Match bet
       };
     });
     
     setPlayers(resetPlayers);
     setDealer({ hand: [], showAll: false });
     
-    // Deal cards immediately
-    dealInitialCards(resetPlayers);
+    // In Switch mode, go to Super Match phase first
+    if (gameMode === 'switch') {
+      setGamePhase('superMatch');
+      setCurrentPlayerIndex(0);
+    } else {
+      // Deal cards immediately in Regular mode
+      dealInitialCards(resetPlayers);
+    }
   };
   
   const togglePlayerType = (index) => {
