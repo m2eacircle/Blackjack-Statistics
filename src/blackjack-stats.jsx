@@ -3433,7 +3433,6 @@ const BlackjackStats = () => {
                 🤖 {players[currentPlayerIndex]?.name} is thinking...
               </div>
             </div>
-            </div>
           )}
           
           {gamePhase === 'dealer' && (
