@@ -753,7 +753,7 @@ const RulesModal = ({ onClose }) => {
             borderBottom: '2px solid rgba(255,255,255,0.3)',
             paddingBottom: '15px'
           }}>
-            Regular Mode Rules
+            Blackjack Regular Rules
           </h2>
           
           <div style={{
@@ -861,7 +861,7 @@ const SwitchRulesModal = ({ onClose }) => {
             borderBottom: '2px solid rgba(255,255,255,0.3)',
             paddingBottom: '15px'
           }}>
-            Switch Mode Rules
+            Blackjack Switch Rules
           </h2>
           
           <div style={{
@@ -2340,7 +2340,7 @@ const BlackjackStats = () => {
               className="mode-card"
               onClick={() => setGameMode('regular')}
             >
-              <div className="mode-icon">♠</div>
+              <div className="mode-icon">🃏🂠</div>
               <h3>Blackjack Regular</h3>
               <p>Classic blackjack rules</p>
               <a 
@@ -2367,7 +2367,7 @@ const BlackjackStats = () => {
               className="mode-card"
               onClick={() => setGameMode('switch')}
             >
-              <div className="mode-icon">♥</div>
+              <div className="mode-icon">🃏🂠 🃏🂠</div>
               <h3>Blackjack Switch</h3>
               <p>Switch cards between hands</p>
               <a 
