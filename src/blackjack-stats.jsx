@@ -1461,11 +1461,12 @@ const BlackjackStats = () => {
   const calculateSuperMatchWinnings = (cards) => {
     if (!cards || cards.length !== 4) return 0;
     
-    // Count card values
+    // For Super Match, use FACE values (A, 2, 3, ..., J, Q, K)
+    // NOT blackjack values where J, Q, K all = 10
     const valueCounts = {};
     cards.forEach(card => {
-      const value = card.value;
-      valueCounts[value] = (valueCounts[value] || 0) + 1;
+      const faceValue = card.display; // Use display (face value) instead of value
+      valueCounts[faceValue] = (valueCounts[faceValue] || 0) + 1;
     });
     
     const counts = Object.values(valueCounts).sort((a, b) => b - a);
