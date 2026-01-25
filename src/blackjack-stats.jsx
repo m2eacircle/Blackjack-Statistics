@@ -1881,11 +1881,14 @@ const BlackjackStats = () => {
       
       let totalWinnings = 0;
       
-      // Each hand has a bet of 5 coins (or original bet amount)
-      const betPerHand = 5; // Each hand is bet separately
+      // Use actual bet amount (could be 5, 10 after double, or split with 5 each)
+      // For split hands, each hand has 5 coins bet
+      // For doubled hands, the bet is 10 coins total
+      const betPerHand = player.splitHand ? 5 : player.bet;
       
       console.log(`=== Resolving ${player.name} ===`);
       console.log(`Has split hand: ${!!player.splitHand}`);
+      console.log(`Actual bet: ${player.bet}, Bet per hand: ${betPerHand}`);
       console.log(`Coins before resolution: ${player.coins}`);
       
       // Calculate winnings for main hand
@@ -3013,7 +3016,8 @@ const BlackjackStats = () => {
                     const calculateHandWinnings = (hand) => {
                       const handValue = calculateHandValue(hand);
                       const handBusted = handValue > 21;
-                      const betPerHand = 5;
+                      // Use actual bet: for split hands it's 5 each, for doubled it's the full bet
+                      const betPerHand = player.splitHand ? 5 : player.bet;
                       
                       if (handBusted) {
                         return { result: 'LOSE', coins: 0 };
