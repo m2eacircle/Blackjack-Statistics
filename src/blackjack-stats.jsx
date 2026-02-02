@@ -2403,13 +2403,12 @@ const BlackjackStats = () => {
             </button>
             
             <button 
-              className="mode-card disabled"
-              disabled
-              title="Coming soon - special rules required"
+              className="mode-card"
+              onClick={() => setGameMode('baccarat')}
             >
-              <div className="mode-icon">♦</div>
-              <h3>Sic Bo</h3>
-              <p>Coming soon</p>
+              <div className="mode-icon">🎴</div>
+              <h3>Baccarat</h3>
+              <p>Bet on Player or Banker</p>
             </button>
           </div>
         </div>
@@ -2565,6 +2564,72 @@ const BlackjackStats = () => {
   }
   
   if (gamePhase === 'setup') {
+    // Baccarat coming soon screen
+    if (gameMode === 'baccarat') {
+      return (
+        <>
+          {showTermsModal && <TermsModal onClose={closeTermsModal} alreadyAccepted={true} />}
+          
+          <div className="setup-screen">
+            <div className="header">
+              <h1 className="main-title">🎴 Baccarat</h1>
+              <a href="https://www.m2eacircle.com/" className="circle-link">
+                <Home size={24} />
+                <span>m2ea Circle</span>
+              </a>
+            </div>
+            
+            <div className="setup-container" style={{ textAlign: 'center', maxWidth: '600px', margin: '0 auto' }}>
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.1)',
+                padding: '60px 40px',
+                borderRadius: '20px',
+                marginBottom: '30px'
+              }}>
+                <div style={{ fontSize: '6rem', marginBottom: '30px' }}>🎴</div>
+                <h2 style={{ color: '#ffd700', fontSize: '2.5rem', marginBottom: '20px' }}>
+                  Coming Soon!
+                </h2>
+                <p style={{ color: 'white', fontSize: '1.2rem', lineHeight: '1.8', marginBottom: '30px' }}>
+                  Baccarat is currently under development. This classic casino game will feature:
+                </p>
+                <ul style={{ 
+                  color: 'white', 
+                  fontSize: '1.1rem', 
+                  textAlign: 'left', 
+                  maxWidth: '400px', 
+                  margin: '0 auto',
+                  lineHeight: '2'
+                }}>
+                  <li>🎯 Player & Banker bets</li>
+                  <li>🎲 Tie bet option</li>
+                  <li>💰 Classic 1:1 and 8:1 payouts</li>
+                  <li>📊 Real-time statistics</li>
+                  <li>🤖 AI opponents</li>
+                </ul>
+              </div>
+              
+              <button 
+                className="back-btn" 
+                onClick={() => {
+                  resetGameState();
+                  setGameMode(null);
+                }}
+                style={{ width: '100%', maxWidth: '400px' }}
+              >
+                ← Back to Game Selection
+              </button>
+            </div>
+            
+            <footer className="footer">
+              <a href="https://www.m2ealabs.com/" className="footer-link">© 2025 m2ea Labs. All rights reserved.</a>
+              <button onClick={showTerms} className="terms-link">Terms of Use</button>
+            </footer>
+          </div>
+        </>
+      );
+    }
+    
     return (
       <>
         {showTermsModal && <TermsModal onClose={closeTermsModal} alreadyAccepted={true} />}
