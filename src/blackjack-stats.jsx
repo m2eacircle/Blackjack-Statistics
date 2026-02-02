@@ -1730,7 +1730,17 @@ const BlackjackStats = () => {
     } else if (action === 'double') {
       if (player.coins >= 5) {
         updatedPlayers[currentPlayerIndex].coins -= 5;
-        updatedPlayers[currentPlayerIndex].bet += 5;
+        
+        // Track which hand is being doubled
+        if (playingSplitHand) {
+          // Doubling second hand
+          updatedPlayers[currentPlayerIndex].splitHandBet = (updatedPlayers[currentPlayerIndex].splitHandBet || 5) + 5;
+        } else {
+          // Doubling first hand
+          updatedPlayers[currentPlayerIndex].mainHandBet = (updatedPlayers[currentPlayerIndex].mainHandBet || 5) + 5;
+        }
+        
+        updatedPlayers[currentPlayerIndex].bet += 5; // Keep total bet updated
         updatedPlayers[currentPlayerIndex][activeHand].push(currentShoe.pop());
         
         if (playingSplitHand || !player.splitHand) {
@@ -1752,6 +1762,10 @@ const BlackjackStats = () => {
         // Deduct additional bet for split hand
         updatedPlayers[currentPlayerIndex].coins -= 5;
         updatedPlayers[currentPlayerIndex].numSplits += 1; // Increment split counter
+        
+        // Initialize separate bets for each hand (both start at 5)
+        updatedPlayers[currentPlayerIndex].mainHandBet = 5;
+        updatedPlayers[currentPlayerIndex].splitHandBet = 5;
         
         // Create split hands
         const card1 = player.hand[0];
@@ -1881,29 +1895,28 @@ const BlackjackStats = () => {
       
       let totalWinnings = 0;
       
-      // Use actual bet amount (could be 5, 10 after double, or split with 5 each)
-      // For split hands, each hand has 5 coins bet
-      // For doubled hands, the bet is 10 coins total
-      const betPerHand = player.splitHand ? 5 : player.bet;
-      
       console.log(`=== Resolving ${player.name} ===`);
       console.log(`Has split hand: ${!!player.splitHand}`);
-      console.log(`Actual bet: ${player.bet}, Bet per hand: ${betPerHand}`);
+      console.log(`Total bet: ${player.bet}`);
       console.log(`Coins before resolution: ${player.coins}`);
       
       // Calculate winnings for main hand
       const playerValue = calculateHandValue(player.hand);
       const playerBusted = playerValue > 21;
       
+      // Use actual bet for this hand (mainHandBet for split, otherwise total bet)
+      const mainHandBetAmount = player.splitHand ? (player.mainHandBet || 5) : player.bet;
+      console.log(`Main hand bet: ${mainHandBetAmount}`);
+      
       let mainHandWinnings = 0;
       if (playerBusted) {
         mainHandWinnings = 0; // Lose bet
         console.log(`Main hand BUSTED (${playerValue}). Winnings: 0`);
       } else if (dealerBusted || playerValue > dealerValue) {
-        mainHandWinnings = betPerHand * 2; // Win: return bet + winnings
+        mainHandWinnings = mainHandBetAmount * 2; // Win: return bet + winnings
         console.log(`Main hand WIN (${playerValue} vs ${dealerValue}). Winnings: ${mainHandWinnings}`);
       } else if (playerValue === dealerValue) {
-        mainHandWinnings = betPerHand; // Push: return bet only
+        mainHandWinnings = mainHandBetAmount; // Push: return bet only
         console.log(`Main hand PUSH (${playerValue} vs ${dealerValue}). Winnings: ${mainHandWinnings}`);
       } else {
         console.log(`Main hand LOSE (${playerValue} vs ${dealerValue}). Winnings: 0`);
@@ -1916,15 +1929,19 @@ const BlackjackStats = () => {
         const splitValue = calculateHandValue(player.splitHand);
         const splitBusted = splitValue > 21;
         
+        // Use actual bet for split hand
+        const splitHandBetAmount = player.splitHandBet || 5;
+        console.log(`Split hand bet: ${splitHandBetAmount}`);
+        
         let splitHandWinnings = 0;
         if (splitBusted) {
           splitHandWinnings = 0; // Lose bet
           console.log(`Split hand BUSTED (${splitValue}). Winnings: 0`);
         } else if (dealerBusted || splitValue > dealerValue) {
-          splitHandWinnings = betPerHand * 2; // Win: return bet + winnings
+          splitHandWinnings = splitHandBetAmount * 2; // Win: return bet + winnings
           console.log(`Split hand WIN (${splitValue} vs ${dealerValue}). Winnings: ${splitHandWinnings}`);
         } else if (splitValue === dealerValue) {
-          splitHandWinnings = betPerHand; // Push: return bet only
+          splitHandWinnings = splitHandBetAmount; // Push: return bet only
           console.log(`Split hand PUSH (${splitValue} vs ${dealerValue}). Winnings: ${splitHandWinnings}`);
         } else {
           console.log(`Split hand LOSE (${splitValue} vs ${dealerValue}). Winnings: 0`);
@@ -3065,8 +3082,8 @@ const BlackjackStats = () => {
                   {player.bet > 0 && (
                     <span className="bet-amount">
                       {player.splitHand ? (
-                        // Both Switch mode and Regular mode with split show separate bets
-                        <>Bet: 5 (H1) + 5 (H2)</>
+                        // Show actual bet amounts for each hand
+                        <>Bet: {player.mainHandBet || 5} (H1) + {player.splitHandBet || 5} (H2)</>
                       ) : (
                         <>Bet: {player.bet}</>
                       )}
@@ -3078,16 +3095,24 @@ const BlackjackStats = () => {
                     const dealerBusted = dealerValue > 21;
                     
                     // Calculate actual winnings for each hand
-                    const calculateHandWinnings = (hand) => {
+                    const calculateHandWinnings = (hand, isMainHand) => {
                       const handValue = calculateHandValue(hand);
                       const handBusted = handValue > 21;
-                      // Use actual bet: for split hands it's 5 each, for doubled it's the full bet
-                      const betPerHand = player.splitHand ? 5 : player.bet;
+                      
+                      // Use actual bet for each hand
+                      let betAmount;
+                      if (player.splitHand) {
+                        // Split hands: use tracked bet for each hand
+                        betAmount = isMainHand ? (player.mainHandBet || 5) : (player.splitHandBet || 5);
+                      } else {
+                        // No split: use total bet
+                        betAmount = player.bet;
+                      }
                       
                       if (handBusted) {
                         return { result: 'LOSE', coins: 0 };
                       } else if (dealerBusted || handValue > dealerValue) {
-                        return { result: 'WIN', coins: betPerHand };
+                        return { result: 'WIN', coins: betAmount };
                       } else if (handValue === dealerValue) {
                         return { result: 'PUSH', coins: 0 };
                       } else {
@@ -3117,8 +3142,8 @@ const BlackjackStats = () => {
                     
                     // Check if player has split hand
                     if (player.splitHand) {
-                      const hand1 = calculateHandWinnings(player.hand);
-                      const hand2 = calculateHandWinnings(player.splitHand);
+                      const hand1 = calculateHandWinnings(player.hand, true);  // true = main hand
+                      const hand2 = calculateHandWinnings(player.splitHand, false);  // false = split hand
                       
                       return (
                         <div style={{ 
@@ -3152,7 +3177,7 @@ const BlackjackStats = () => {
                       );
                     } else {
                       // Single hand
-                      const hand = calculateHandWinnings(player.hand);
+                      const hand = calculateHandWinnings(player.hand, true);  // true = main hand
                       return (
                         <div style={{ 
                           display: 'flex', 
