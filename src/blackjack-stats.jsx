@@ -782,7 +782,7 @@ const RulesModal = ({ onClose }) => {
             <div style={{ marginLeft: '15px' }}>
               <p><strong>Hit:</strong> Request one or more additional cards.</p>
               <p><strong>Stand:</strong> Stop taking cards and play with your current hand.</p>
-              <p><strong>Split:</strong> If the first two cards have the same value, you can split them into two separate hands. Each hand is played separately with an equal bet. <em>Note: This app allows splitting only once per game for study purposes.</em></p>
+              <p><strong>Split:</strong> If the first two cards have the same value, you can split them into two separate hands. Each hand is played separately with an equal bet.</p>
               <p><strong>Double:</strong> After the first two cards are dealt, wager an additional amount equal to the original bet. You receive only one additional card after doubling down.</p>
             </div>
             
@@ -795,6 +795,19 @@ const RulesModal = ({ onClose }) => {
               <li><strong>Push:</strong> Same total as dealer (tie)</li>
               <li><strong>Bust:</strong> Over 21 (automatic loss)</li>
             </ul>
+            
+            <div style={{
+              background: 'rgba(255,255,0,0.2)',
+              border: '2px solid rgba(255,255,0,0.5)',
+              padding: '15px',
+              borderRadius: '10px',
+              marginTop: '25px'
+            }}>
+              <p style={{ margin: 0, fontSize: '0.95rem' }}>
+                <strong>⚠️ Note:</strong> For study purposes, this app allows splitting only once per game. 
+                Real casino rules typically allow splitting up to 3 or 4 times depending on the casino.
+              </p>
+            </div>
           </div>
         </div>
         
@@ -927,7 +940,7 @@ const SwitchRulesModal = ({ onClose }) => {
               marginTop: '25px'
             }}>
               <p style={{ margin: 0, fontSize: '0.95rem' }}>
-                <strong>⚠️ Note:</strong> Due to logic complexity, the Switch Mode in this app 
+                <strong>⚠️ Note:</strong> For study purposes, the Switch Mode in this app 
                 does not fully follow the real Switch rules. For example, this app does not 
                 support Split play in Switch Mode, while the official Switch rules allow Split 
                 play with the same rules as Regular Mode.
