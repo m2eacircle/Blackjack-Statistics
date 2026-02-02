@@ -782,7 +782,7 @@ const RulesModal = ({ onClose }) => {
             <div style={{ marginLeft: '15px' }}>
               <p><strong>Hit:</strong> Request one or more additional cards.</p>
               <p><strong>Stand:</strong> Stop taking cards and play with your current hand.</p>
-              <p><strong>Split:</strong> If the first two cards have the same value, you can split into two hands, up to a maximum of four hands. Each hand is played separately.</p>
+              <p><strong>Split:</strong> If the first two cards have the same value, you can split them into two separate hands. Each hand is played separately with an equal bet. <em>Note: This app allows splitting only once per game for study purposes.</em></p>
               <p><strong>Double:</strong> After the first two cards are dealt, wager an additional amount equal to the original bet. You receive only one additional card after doubling down.</p>
             </div>
             
